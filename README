@@ -12,6 +12,9 @@ As this is only a test project for me, I only test it on Firefox and Chrome.
 NEWS
 -----------
 
+19.02.12
+Added Stats.js R9 by mr.doob (http://github.com/mrdoob/stats.js)
+
 18.02.12.
 Firstly I want to try a simple Canvas Version.
 It seems to be a bit slow right now, but the code issn't very nice at the moment...

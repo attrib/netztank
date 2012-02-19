@@ -8,10 +8,13 @@
 var context;
 var items = [];
 var player = new Player();
+var stats;
+var windowHeight = 592;
+var windowWidth  = 800;
 
 $(document).ready(function () {
     var main = $('#game');
-    var canvas = $('<canvas id="canvas" width="800" height="592"></canvas>');
+    var canvas = $('<canvas id="canvas" width="'+windowWidth+'" height="'+windowHeight+'"></canvas>');
     canvas = canvas.get(0);
     main.append(canvas);
 
@@ -28,14 +31,26 @@ $(document).ready(function () {
 
         redraw();
 
+        stats = new Stats();
+
+        // Align top-left
+        stats.getDomElement().style.position = 'absolute';
+        stats.getDomElement().style.right = '0px';
+        stats.getDomElement().style.top = '0px';
+
+        document.body.appendChild( stats.getDomElement() );
+
+        setInterval(tick, 1000 / 60);
+
     } else {
         alert('Not supported');
     }
 });
 
 var draw_dirty = false;
-function draw() {
-    bullets.fly();
+function tick() {
+    player.tick();
+    bullets.tick();
     if (draw_dirty) {
         var elem = $("canvas");
         var canvas = elem.get(0);
@@ -46,8 +61,9 @@ function draw() {
         bullets.draw();
     }
     draw_dirty = false;
+    stats.update();
 }
-setInterval(draw, 40);
+
 
 function redraw() {
     draw_dirty = true;
@@ -57,11 +73,13 @@ function Map() {
 
     var width = 16;
     var height = 16;
+    var columns = parseInt(windowWidth / 16);
+    var rows = parseInt(windowHeight / 16);
 
     this.draw = function() {
-        for (var x = 0; x <= 49; x++) {
-            for (var y = 0; y <= 36; y++) {
-                if (x == 0 || x == 49 || y == 0 || y == 36 ) {
+        for (var x = 0; x < columns; x++) {
+            for (var y = 0; y < rows; y++) {
+                if (x == 0 || x == columns-1 || y == 0 || y == rows-1 ) {
                     emptyBlock(x,y);
                 }
                 else {
@@ -114,11 +132,28 @@ function Tank(config) {
     this.forward = function() {
         x += Math.cos(rotation)*speed;
         y += Math.sin(rotation)*speed;
+        jumpBorder();
     };
 
     this.backward = function() {
         x -= Math.cos(rotation)*speed;
         y -= Math.sin(rotation)*speed;
+        jumpBorder();
+    };
+
+    var jumpBorder = function() {
+        if ( x < 0) {
+            x += windowWidth;
+        }
+        if ( x > windowWidth ) {
+            x -= windowWidth;
+        }
+        if ( y < 0 ) {
+            y += windowHeight;
+        }
+        if ( y > windowHeight ) {
+            y -= windowHeight;
+        }
     };
 
     this.left = function() {
@@ -163,7 +198,7 @@ var bullets = {
     items: [],
     counter: 0,
 
-    fly: function() {
+    tick: function() {
         if (this.items.length > 0) {
             $(this.items).each(function(i, bullet) {
                 bullet.fly();
@@ -219,7 +254,7 @@ function Bullet(id, ox, oy, tank) {
     this.fly = function() {
         x += Math.cos(tank.getCanonRotation())*speed;
         y += Math.sin(tank.getCanonRotation())*speed;
-        if (x > 800 || y > 592 || x < 0 || y < 0) {
+        if (x > windowWidth || y > windowHeight || x < 0 || y < 0) {
             bullets.removeBullet(id);
         }
         redraw();
@@ -235,37 +270,51 @@ function Player() {
 
     var tank;
 
+    var keys = {};
+
     this.init = function(playerTank) {
         tank = playerTank;
-        $(document).bind('keydown', this.keydown);
+        $(document).bind('keydown', function(event) {
+            switch (event.keyCode) {
+                case 32:
+                    tank.shoot();
+                    break;
+                default:
+                    keys[event.keyCode] = true;
+                    break;
+            }
+        });
+        $(document).bind('keyup', function(event) {keys[event.keyCode] = false;});
     };
 
-    this.keydown = function(event) {
-        var keycode = event.keyCode;
-        //console.log(keycode);
-        switch(keycode) {
-            case 38:
-                tank.forward();
-                break;
-            case 40:
-                tank.backward();
-                break;
-            case 39:
-                tank.right();
-                break;
-            case 37:
-                tank.left();
-                break;
-            case 65: //A
-                tank.canonLeft();
-                break;
-            case 68: //D
-                tank.canonRight();
-                break;
-            case 32: //space
-                tank.shoot();
-                break;
+    this.tick = function() {
+        var doRedraw = false;
+        if (keys[38]) {
+            tank.forward();
+            doRedraw = true;
         }
-        redraw();
+        if (keys[40]) {
+            tank.backward();
+            doRedraw = true;
+        }
+        if (keys[39]) {
+            tank.right();
+            doRedraw = true;
+        }
+        if (keys[37]) {
+            tank.left();
+            doRedraw = true;
+        }
+        if (keys[65]) {
+            tank.canonLeft();
+            doRedraw = true;
+        }
+        if (keys[68]) {
+            tank.canonRight();
+            doRedraw = true;
+        }
+        if (doRedraw) {
+            redraw();
+        }
     };
 }
