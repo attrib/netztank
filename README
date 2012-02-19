@@ -1,1 +1,17 @@
-This file was created by JetBrains PhpStorm 3.0.2 for binding GitHub repository
+Netztank JS
+-----------
+
+I want to play araound with Canvas and/or WebGL and I decided to make a little game.
+So I decided to do a remake of netztank.
+
+Netztank was written by Andreas Reischuck in x86 assembler.
+More information about it: http://andreas.reischuck.de/en/projects/netztank/
+
+As this is only a test project for me, I only test it on Firefox and Chrome.
+
+NEWS
+-----------
+
+18.02.12.
+Firstly I want to try a simple Canvas Version.
+It seems to be a bit slow right now, but the code issn't very nice at the moment...
