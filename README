@@ -15,6 +15,7 @@ NEWS
 -----------
 
 19.02.12
+Added original Map!
 Added simple collision check and did some refactoring
 Added Stats.js R9 by mr.doob (http://github.com/mrdoob/stats.js)
 

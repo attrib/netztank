@@ -32,7 +32,7 @@ var bullets = {
 
     createBullet: function(x, y, tank) {
         x += Math.cos(tank.getCanonRotation())*tanks.width;
-        y += Math.sin(tank.getCanonRotation())*tanks.height;
+        y += Math.sin(tank.getCanonRotation())*tanks.width;
         this.items.push(new Bullet(this.counter, x, y, tank));
         this.counter++;
     },
