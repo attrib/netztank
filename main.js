@@ -17,6 +17,40 @@ $(document).ready(function () {
     var canvas = $('<canvas id="canvas" width="'+windowWidth+'" height="'+windowHeight+'"></canvas>');
     canvas = canvas.get(0);
     main.append(canvas);
+    var imageObj = new Image();
+    imageObj.src = 'images/sprites.png';
+
+    canvas.requestPointerLock = canvas.requestPointerLock ||
+      canvas.mozRequestPointerLock ||
+      canvas.webkitRequestPointerLock;
+
+    document.exitPointerLock = document.exitPointerLock ||
+      document.mozExitPointerLock ||
+      document.webkitExitPointerLock;
+
+    canvas.onclick = requestPointLock;
+    function requestPointLock() {
+        canvas.requestPointerLock();
+    }
+
+    // Hook pointer lock state change events for different browsers
+    document.addEventListener('pointerlockchange', lockChangeAlert, false);
+    document.addEventListener('mozpointerlockchange', lockChangeAlert, false);
+    document.addEventListener('webkitpointerlockchange', lockChangeAlert, false);
+
+    function lockChangeAlert() {
+        if(document.pointerLockElement === canvas ||
+          document.mozPointerLockElement === canvas ||
+          document.webkitPointerLockElement === canvas) {
+            player.mouseLocked = true;
+            document.addEventListener("mousemove", player.mouseMove, false);
+            canvas.onclick = player.mouseClick;
+        } else {
+            player.mouseLocked = false;
+            document.removeEventListener("mousemove", player.mouseMove, false);
+            canvas.onclick = requestPointLock;
+        }
+    }
 
     if (canvas.getContext){
         context = canvas.getContext('2d');
@@ -24,7 +58,7 @@ $(document).ready(function () {
         map = new Map();
         tanks.setMap(map);
         bullets.setMap(map);
-        var playerTank = tanks.createTank({color: "rgb(200,0,0)"});
+        var playerTank = tanks.createTank({color: "rgb(200,0,0)", sprites: imageObj});
         player.init(playerTank);
 
         redraw();
@@ -184,6 +218,10 @@ function Player() {
 
     var keys = {};
 
+    var doRedraw = false;
+
+    var mouseLocked = false;
+
     this.init = function(playerTank) {
         tank = playerTank;
         $(document).bind('keydown', function(event) {keys[event.keyCode] = true;});
@@ -197,34 +235,76 @@ function Player() {
         });
     };
 
+    this.mouseMove = function(event) {
+        mouseLocked = true;
+        var movementX = event.movementX ||
+          event.mozMovementX          ||
+          event.webkitMovementX       ||
+          0;
+        tank.canonRotate(movementX); //movementX > 0 ? 1 : -1);
+        doRedraw = true;
+    };
+
+    this.mouseClick = function() {
+        tank.shoot();
+    };
+
     this.tick = function() {
-        var doRedraw = false;
-        if (keys[38]) {
+        if (keys[38]) { // up
             tank.move(1);
             doRedraw = true;
         }
-        if (keys[40]) {
+        if (keys[40]) { // down
             tank.move(-1);
             doRedraw = true;
         }
-        if (keys[39]) {
-            tank.rotate(1);
+        if (keys[39]) { // left
+            if (mouseLocked) {
+                tank.canonRotate(1);
+            }
+            else {
+                tank.rotate(1);
+            }
             doRedraw = true;
         }
-        if (keys[37]) {
-            tank.rotate(-1);
+        if (keys[37]) { // right
+            if (mouseLocked) {
+                tank.canonRotate(-1);
+            }
+            else {
+                tank.rotate(-1);
+            }
             doRedraw = true;
         }
-        if (keys[65]) {
-            tank.canonRotate(-1);
+        if (keys[87]) { // w
+            tank.move(1);
             doRedraw = true;
         }
-        if (keys[68]) {
-            tank.canonRotate(1);
+        if (keys[83]) { // s
+            tank.move(-1);
+            doRedraw = true;
+        }
+        if (keys[65]) { // a
+            if (mouseLocked) {
+                tank.rotate(-1);
+            }
+            else {
+                tank.canonRotate(-1);
+            }
+            doRedraw = true;
+        }
+        if (keys[68]) { // d
+            if (mouseLocked) {
+                tank.rotate(1);
+            }
+            else {
+                tank.canonRotate(1);
+            }
             doRedraw = true;
         }
         if (doRedraw) {
             redraw();
+            doRedraw = false;
         }
     };
 }

@@ -74,18 +74,24 @@ function Tank(config) {
     var rotation = 0;
     var canonRotation = 0;
     var color = config.color;
+    var sprites = config.sprites;
 
     this.draw = function(context) {
         context.save();
-        var sin = Math.sin(rotation);
-        var cos = Math.cos(rotation);
+        var sin = Math.sin(rotation - Math.PI);
+        var cos = Math.cos(rotation - Math.PI);
         context.setTransform(cos, sin, -sin, cos, x, y);
-        context.fillStyle = color;
-        context.fillRect(-tanks.width/2, -tanks.height/2, tanks.width, tanks.height);
+        context.drawImage(sprites, 0, 0, 128, 128, - tanks.width, -tanks.height - 3, tanks.width * 1.5, tanks.height * 3);
 
-        context.rotate(canonRotation);
-        context.fillStyle = "rgb(200,200,200)";
-        context.fillRect(-tanks.width/8, -tanks.height/8, 3*tanks.width/4, tanks.height/4);
+        //context.setTransform(cos, sin, -sin, cos, x, y);
+        //context.rect(-tanks.width/2, -tanks.height/2, tanks.width, tanks.height);
+        //context.lineWidth = 2;
+        //context.strokeStyle = color;
+        //context.stroke();
+
+        context.rotate(canonRotation - Math.PI);
+        context.fillStyle = color;
+        context.fillRect(-tanks.width/8, -tanks.height/8, 3*tanks.width/3, tanks.height/4);
         context.restore();
     };
 
